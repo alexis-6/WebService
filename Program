@@ -1,0 +1,145 @@
+using Newtonsoft.Json.Linq;
+using System.Net;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Login();
+    }
+    public static void Login()
+    {
+        string errorLogin;
+        string responseLogin;
+        var url = "endPoint";
+        var request = (HttpWebRequest)WebRequest.Create(url);
+        string json = $"{{\"user\":\"User\",\"password\":\"123\"}}";
+        request.Method = "POST";
+        request.ContentType = "application/json";
+        request.Accept = "application/json";
+        using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+        {
+            streamWriter.Write(json);
+            streamWriter.Flush();
+            streamWriter.Close();
+        }
+        try
+        {
+            using (WebResponse response = request.GetResponse())
+            {
+                using (Stream strReader = response.GetResponseStream())
+                {
+                    if (strReader == null) return;
+                    using (StreamReader objReader = new StreamReader(strReader))
+                    {
+                        responseLogin = objReader.ReadToEnd();// leemos todo desde el inicio hasta el final
+                        if (!string.IsNullOrEmpty(responseLogin)) //validamos si la respuesta no es nula o vacia
+                        {
+                            string user = JObject.Parse(responseLogin)["user"].ToString(); //obtener llave user
+                        }
+                    }
+                }
+            }
+        }
+        catch (WebException ex)
+        {
+            if (ex.Status == WebExceptionStatus.ProtocolError)
+            {
+                HttpWebResponse responseEx = ex.Response as HttpWebResponse;
+                if (responseEx != null)
+                {
+                    errorLogin = new StreamReader(responseEx.GetResponseStream()).ReadToEnd();
+                    responseLogin = "ERROR: " + errorLogin + ".\n";
+                    Console.WriteLine(responseLogin);
+                }
+            }
+        }
+    }
+    public static void GetById()
+    {
+        int Id = 1;
+        string reader;
+        var url = "endPoint" + Id;
+        var request = (HttpWebRequest)WebRequest.Create(url);
+        request.Method = "GET";
+        request.Accept = "application/json";
+        request.Headers.Add("Authorization", "Bearer " + token);
+        HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            reader = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            Console.WriteLine("RESPONSE GET BY ACCOUNT: " + reader + ".\n");
+        }
+        else
+        {
+            reader = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            Console.WriteLine("ERROR GET BY ACCOUNT: " + reader + ".\n");
+        }
+    }
+    public static void GetAll()
+    {
+        string token = "App";
+        string reader;
+        var url = "endPoint";
+        var request = (HttpWebRequest)WebRequest.Create(url);
+        request.Method = "GET";
+        request.Accept = "application/json";
+        request.Headers.Add("Authorization", "Bearer " + token);
+        HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            reader = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            Console.WriteLine("RESPONSE GET ALL: " + reader + ".\n");
+        }
+        else
+        {
+            reader = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            Console.WriteLine("ERROR GET ALL: " + reader + ".\n");
+        }
+    }
+    public static void Create(string token)
+    {
+        string token = "App";
+        string responseCreate;
+        string json = $"{{\"user\":\"User123\",\"password\":\"123456\"}}";
+        var url = "endPoint";
+        var request = (HttpWebRequest)WebRequest.Create(url);
+        request.Method = "POST";
+        request.Headers.Add("Authorization", "Bearer " + token);
+        request.ContentType = "application/json";
+        request.Accept = "application/json";
+        using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+        {
+            streamWriter.Write(json);
+            streamWriter.Flush();
+            streamWriter.Close();
+        }
+        try
+        {
+            using (WebResponse response = request.GetResponse())
+            {
+                using (Stream strReader = response.GetResponseStream())
+                {
+                    if (strReader == null) return;
+                    using (StreamReader objReader = new StreamReader(strReader))
+                    {
+                        responseCreate = objReader.ReadToEnd();
+                        Console.WriteLine("RESPONSE CREATE: " + responseCreate + ".\n");
+                    }
+                }
+            }
+        }
+        catch (WebException ex)
+        {
+            if (ex.Status == WebExceptionStatus.ProtocolError)
+            {
+                HttpWebResponse err = ex.Response as HttpWebResponse;
+                if (err != null)
+                {
+                    string error = new StreamReader(err.GetResponseStream()).ReadToEnd();
+                    Console.WriteLine("ERROR CREATE: " + error + ".\n");
+                }
+            }
+        }
+    }
+}
